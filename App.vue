@@ -2,6 +2,12 @@
 	export default {
 		onLaunch: function() {
 			console.log('App Launch')
+			uni.login({
+				provider: "weixin",
+				success: (data) => {
+					
+				}
+			})
 		},
 		onShow: function() {
 			console.log('App Show')
