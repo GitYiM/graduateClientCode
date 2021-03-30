@@ -81,6 +81,7 @@
 				const res = await _this.$http({
 					method: "get",
 					url: "/login/code2session",
+					needLoading: true,
 					data: {
 						code
 					}
