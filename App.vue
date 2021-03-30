@@ -1,7 +1,10 @@
 <script>
 	export default {
 		onLaunch: function() {
-			console.log('App Launch')
+			// 从存储中获取登录状态，避免重复登录
+			this.$store.commit("updateLoginStatusInfo", uni.getStorageSync("loginStatusInfo"));
+			
+			console.log('App Launch');
 		},
 		onShow: function() {
 			console.log('App Show')
