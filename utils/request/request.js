@@ -9,16 +9,23 @@ const defaultConfig = {
 	}
 };
 
+/**
+ * @param {needLoading} 用于配置是否加载异步等待loadIng效果 
+ */
 const http = (config) => {
-	const { url, method, data } = config;
+	const { url, method, data, needLoading = false } = config;
 	// 拼接url
 	config.url = defaultConfig.baseUrl + config.url;
 	return new Promise((resolve, reject) => {
+		needLoading && uni.showLoading({
+			title: "loading..."
+		});
 		uni.request({
 			...defaultConfig,
 			...config,
 			complete: () => {
 				console.log("请求完成");
+				needLoading && uni.hideLoading();
 			},
 			success: (data) => {
 				resolve(data.data);
