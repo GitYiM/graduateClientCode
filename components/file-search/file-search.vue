@@ -27,7 +27,7 @@
 		display: flex;
 		align-items: center;
 		background-color: #EBEBEB;
-		height: 70rpx;
+		height: 70upx;
 		width: 100%;
 		box-sizing: border-box;
 		border-radius: 40rpx;
