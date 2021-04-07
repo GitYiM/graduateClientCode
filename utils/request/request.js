@@ -4,7 +4,7 @@ const defaultConfig = {
 	// baseUrl: "https://119.29.4.75/unnetdisk-server",
 	baseUrl: "https://localhost:8086/unnetdisk-server",
 	timeout: 5000,
-	header: {
+	header: {	
 		userSession: store.state.loginStatusInfo.userSession
 	}
 };

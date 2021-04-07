@@ -45,14 +45,14 @@
         // 底部导航栏的菜单项
         list: [{
             "pagePath": "/pages/bottom-nav/fileOper/fileOper",
-            "text": "文件",
-            "icon": "folder"
+            "text": "鲸吞",
+            "icon": "home3"
           },
           {
             "pagePath": "/pages/bottom-nav/person/person",
             "text": "个人",
             // 字体图标不可与图片共显
-            "icon": "user",
+            "icon": "user-tie",
             // 以导入方式传入的图片最佳 import srcImg from "@/static/xxx.png"
             // src 大小限制为40kb，建议尺寸为 81px * 81px
             // "src": "../../static/home.png",
