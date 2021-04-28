@@ -1,7 +1,7 @@
 <template>
 	<view class="search-container">
 		<cmd-icon class="search-icon" type="search" size="md" :color="searchIconColor"></cmd-icon>
-		<input :placeholder="placeholder" class="search-input" v-model="keyWord"/>
+		<input  :focus="autoFocus" @blur="onBlur" @focus="onFocus" @click="onClick" :placeholder="placeholder" class="search-input" v-model="innerKeyWord"/>
 	</view>
 </template>
 
@@ -12,12 +12,42 @@
 		components: {
 			cmdIcon
 		},
+		props:{
+			keyWord: {
+				type: String,
+				default: ''
+			},
+			autoFocus: {
+				type: Boolean,
+				default: false
+			}
+		},
+		watch: {
+			keyWord(val) {
+				this.innerKeyWord = val;
+			},
+			innerKeyWord(val) {
+				this.$emit("update:keyWord", val);
+			}
+		},
 		data() {
 			return {
 				searchIconColor: "#ABABAB",
-				keyWord: "",
-				placeholder: "搜索网盘文件"
+				placeholder: "搜索网盘文件",
+				innerKeyWord: this.keyWord
 			};
+		},
+		methods: {
+			// 这里用@focus 有bug所以 换成click事件
+			onClick(e) {
+				this.$emit("onClick", e);
+			},
+			onBlur(e) {
+				this.$emit("onBlur", e);
+			},
+			onFocus(e) {
+				this.$emit("onFocus", e);
+			}
 		}
 	}
 </script>
@@ -36,6 +66,7 @@
 			
 		}
 		.search-input {
+			width: 100%;
 			margin-left: 10rpx;
 			font-size: 10px;
 			color: #ABABAB;

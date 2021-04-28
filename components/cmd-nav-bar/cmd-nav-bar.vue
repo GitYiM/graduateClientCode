@@ -4,8 +4,8 @@
 		<view class="cmd-nav-bar">
 			<view class="cmd-nav-bar-left">
 				<view v-if="leftTitle" class="cmd-nav-bar-left-title" :style="'color:'+setFontColor">{{leftTitle}}</view>
-				<view v-if="back && !leftTitle || iconOne && !leftTitle " @tap="$_iconOneClick" class="cmd-nav-bar-left-icon">
-					<cmd-icon :type="back ?'chevron-left' : iconOne" size="24" :color="setFontColor"></cmd-icon>
+				<view v-if="pathBack && !leftTitle || iconOne && !leftTitle" @tap="$_iconOneClick" class="cmd-nav-bar-left-icon">
+					 <text  class="text-gray" style="font-size: 20px;" :class="'cuIcon-back'"></text>
 				</view>
 				<text v-if="leftText && !leftTitle" @tap="$_leftTextClick" :style="'color:'+setFontColor">{{leftText}}</text>
 			</view>
@@ -93,7 +93,7 @@
 			/**
 			 * 导航栏左侧返回按钮，默认点击返回上层
 			 */
-			back: {
+			pathBack: {
 				type: Boolean,
 				default: false
 			},
@@ -183,11 +183,11 @@
 			 * 图标一点击事件
 			 */
 			$_iconOneClick() {
-				if (this.back) {
-					uni.navigateBack()
-				} else {
-					this.$emit("iconOne");
-				}
+				if (this.pathBack) {
+					this.$emit("pathBack");
+				}else {
+					console.log("else");
+				} 
 			},
 			/**
 			 * 图标二点击事件

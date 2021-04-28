@@ -12,8 +12,9 @@ const mutations = {
 		
 	// }
 	updateLoginStatusInfo(state, newLoginStatusInfo) {
-		state.loginStatusInfo = {...state.loginStatusInfo, ...newLoginStatusInfo};
-		uni.setStorageSync("loginStatusInfo", state.loginStatusInfo);
+		const newStatusInfo =  {...state.loginStatusInfo, ...newLoginStatusInfo}
+		uni.setStorageSync("loginStatusInfo",newStatusInfo);
+		state.loginStatusInfo = newStatusInfo;
 	},
 
 }

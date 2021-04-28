@@ -3,16 +3,20 @@
 		<view class="uni-list-item__container">
 			<!-- 有缩略图得用image, 文件等固定图标用icon -->
 			<view v-if="prefixShow" class="uni-list-item__icon">
-				<cmd-icon v-if="prefixIcon" :type="prefixIcon" :color="prefixIconColor"/>
-				<text v-if="textPrefixIcon"  class="text-gray" style="font-size: 24px;" :class="'cuIcon-'+textPrefixIcon"></text>
-				<image v-else-if="thumb" :src="thumb" class="uni-list-item__icon-img"  />
+				<!-- 文字图标 -->
+				<cmd-icon v-if="iconTypes.includes(type)" :type="prefixIcon" :color="prefixIconColor"/>
+				<!-- colorui图标 -->
+				<!-- <text v-if="textPrefixIcon"  class="text-gray" style="font-size: 24px;" :class="'cuIcon-'+textPrefixIcon"></text> -->
+				<!-- 缩略图 -->
+				
+				<image v-else-if="thumbTypes.includes(type)" :src="thumb" class="uni-list-item__icon-img"  />
 			</view>
 			<view class="uni-list-item__content">
 				<view class="uni-list-item__content-title">{{ title }}</view>
-				<view v-if="note" class="uni-list-item__content-note">{{ note }}</view>
+				<view v-if="note" class="white-space uni-list-item__content-note">{{ note }}</view>
 			</view>
 			<view v-if="showMore" class="uni-list-item__extra">
-				<text @click="itemMoreClick" data-target="bottomModal" class="text-gray" style="font-size: 24px;" :class="'cuIcon-more'"></text>
+				<text @click.stop="itemMoreClick" data-target="bottomModal" class="text-gray" style="font-size: 24px;" :class="'cuIcon-more'"></text>
 			</view>
 		</view>
 	</view>
@@ -20,12 +24,18 @@
 
 <script>
 	import cmdIcon from '../cmd-icon/cmd-icon.vue';
+	import {FileType} from '@/common/const/index.js';
 	export default {
 		name: 'UniListItem',
 		components: {
 			cmdIcon
 		},
 		props: {
+			type: {
+				type: String,
+				default: '',
+				required: true
+			},
 			title: {
 				type: String,
 				default: ''
@@ -40,7 +50,7 @@
 			},
 			thumb: {
 				type: String,
-				default: ''
+				default: '',
 			}, // 缩略图
 			showMore: {
 				type: Boolean,
@@ -50,10 +60,10 @@
 				type: Boolean,
 				default: false
 			},
-			prefixIcon: {
-				type: String,
-				default: ''
-			},
+			// prefixIcon: {
+			// 	type: String,
+			// 	default: ''
+			// },
 			prefixIconColor: {
 				type: String,
 				default: ''
@@ -66,11 +76,18 @@
 		},
 		data() {
 			return {
-
+				iconTypes: [
+					"Directory"
+				],
+				thumbTypes: [
+					'image/png',
+					'image/jpeg'
+				]
 			}
 		},
 		methods: {
-			onClick() {
+			onClick(e) {
+				// 阻止冒泡
 				this.$emit('itemClick')
 			},
 			onSwitchChange(e) {
@@ -78,6 +95,16 @@
 			},
 			itemMoreClick(e) {
 				this.$emit('itemMoreClick', e);
+			}
+		},
+		computed: {
+			prefixIcon() {
+				switch(this.type) {
+					case 'Directory': 
+					return 'folder';
+					default:
+					return 'image';
+				}
 			}
 		}
 	}
@@ -177,5 +204,8 @@
 
 	.uni-list>.uni-list-item:last-child .uni-list-item-container:after {
 		height: 0
+	}
+	.white-space {
+		white-space: pre;
 	}
 </style>
