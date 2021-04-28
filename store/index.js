@@ -13,9 +13,18 @@ const store = new Vuex.Store({
 		loginStatusInfo: {
 			hasLogin: false,
 			userSession: "",
-			username: '',
+			gender: 0,
+			city: '',
+			userName: '',
+			province: '',
+			country: '',
 			avatarUrl: '',
-			userSession: '',
+			userUsage: 0,
+			picUsage: 0, 
+			videoUsage: 0, 
+			audioUsage: 0, 
+			docUsage: 0, 
+			otherUsage: 0
 		}
 	},
 	// state的计算属性

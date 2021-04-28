@@ -67,26 +67,20 @@
 			}
 		},
 
-		mounted() {
-			// 初始默认内容高度 
-			let windowHeight = uni.getSystemInfoSync().windowHeight;
-			// #ifndef H5
-			windowHeight -= uni.getSystemInfoSync().statusBarHeight;
-			// #endif
-			// #ifdef MP
-			windowHeight -= 5;
-			// #endif
-      if (this.type == 'top') {
-      	windowHeight -= uni.upx2px(88);
-      }
-      if (this.type == 'bottom') {
-      	windowHeight -= uni.upx2px(118);
-      }
-      if (this.type == 'top-bottom') {
-      	windowHeight -= uni.upx2px(206);
-      }
-			this.bodyHeight = `min-height:${windowHeight}px`;
-		},
+		// mounted() {
+		// 	// 初始默认内容高度 
+		// 	let windowHeight = uni.getSystemInfoSync().windowHeight;
+		// 	  if (this.type == 'top') {
+		// 		windowHeight -= uni.upx2px(88);
+		// 	  }
+		// 	  if (this.type == 'bottom') {
+		// 		windowHeight -= uni.upx2px(118);
+		// 	  }
+		// 	  if (this.type == 'top-bottom') {
+		// 		windowHeight -= uni.upx2px(206);
+		// 	  }
+		// 	this.bodyHeight = `min-height:${windowHeight}px`;
+		// },
 
 	}
 </script>
@@ -101,6 +95,7 @@
 	}
 
 	.cmd-page-body-top-bottom {
+		height: 100vh;
 		padding-bottom: 118upx;
 		padding-top: 88upx;
 		top: var(--status-bar-height);

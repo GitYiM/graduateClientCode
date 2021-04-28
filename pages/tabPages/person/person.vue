@@ -1,9 +1,9 @@
 <template>
   <view>
     <view class="person-head">
-      <cmd-avatar src="https://avatar.bbs.miui.com/images/noavatar_small.gif" @click="fnInfoWin" size="lg" :make="{'background-color': '#fff'}"></cmd-avatar>
+      <cmd-avatar :src="avatarUrl" @click="fnInfoWin" size="lg" :make="{'background-color': '#fff'}"></cmd-avatar>
       <view class="person-head-box">
-        <view class="person-head-nickname">Slimmer</view>
+        <view class="person-head-nickname">{{nickName}}</view>
 		<view class="progress-box">
 			<progress percent="80" activeColor="green" active stroke-width="3" />
 		</view>
@@ -14,9 +14,9 @@
       <cmd-cell-item title="帮助与反馈" slot-left arrow>
         <cmd-icon type="message" size="md" color="#368dff"></cmd-icon>
       </cmd-cell-item>
-      <cmd-cell-item title="切换账号" slot-left arrow>
+<!--      <cmd-cell-item title="切换账号" slot-left arrow>
         <cmd-icon type="equalizer" size="md" color="#368dff"></cmd-icon>
-      </cmd-cell-item>
+      </cmd-cell-item> -->
     </view>
   </view>
 </template>
@@ -25,7 +25,7 @@
   import cmdAvatar from "@/components/cmd-avatar/cmd-avatar.vue"
   import cmdIcon from "@/components/cmd-icon/cmd-icon.vue"
   import cmdCellItem from "@/components/cmd-cell-item/cmd-cell-item.vue"
-
+  import {mapState} from 'vuex';
   export default {
     components: {
       cmdAvatar,
@@ -35,6 +35,12 @@
     data() {
       return {};
     },
+	computed: {
+		...mapState({
+			nickName: state => state.loginStatusInfo.nickName,
+			avatarUrl: state => state.loginStatusInfo.avatarUrl
+		})
+	},
     methods: {
       /**
        * 打开用户信息页
@@ -87,6 +93,7 @@
     line-height: 0;
   }
   .progress-box {
+	margin: 10upx 0 5upx 0;
 	width: 100%;
   	height: 20rpx;
   }
