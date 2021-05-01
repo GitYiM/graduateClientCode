@@ -96,9 +96,9 @@
 
 	.cmd-page-body-top-bottom {
 		height: 100vh;
+		overflow: scroll;
 		padding-bottom: 118upx;
-		padding-top: 88upx;
-		top: var(--status-bar-height);
+		padding-top:calc(88upx + var(--status-bar-height));
 	}
 
 	.cmd-page-body-bottom {
@@ -106,7 +106,7 @@
 	}
 
 	.cmd-page-body-top {
-		padding-top: 88upx;
-		top: var(--status-bar-height);
+		height: 100vh;
+		padding-top: calc(88upx + var(--status-bar-height));
 	}
 </style>

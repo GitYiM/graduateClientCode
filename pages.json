@@ -1,5 +1,6 @@
 {
 	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		
 		{
 			"path": "pages/tabPages/index",
 			"style": {
@@ -26,6 +27,25 @@
             }
             
         }
+        ,{
+            "path" : "pages/operLog/operLog",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "",
+                "enablePullDownRefresh": false
+            }
+            
+        },
+		{
+		    "path" : "pages/sharePage/sharePage",
+		    "style" :                                                                                    
+		    {
+		        "navigationBarTitleText": "",
+		        "enablePullDownRefresh": false
+		    }
+		    
+		}
+
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",

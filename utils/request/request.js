@@ -39,7 +39,7 @@ http.request = (config) => {
 };
 
 http.uploadFile = (config) => {
-	const {url, header, files, fileType} = config;
+	const {url, header={}, files, fileType} = config;
 	let uploadTask = null;
 	const uploadPromise = new Promise((resolve, reject) => {
 		console.log("执行");
@@ -47,7 +47,8 @@ http.uploadFile = (config) => {
 			...config,
 			...defaultConfig,
 			header: {
-				...defaultConfig.header
+				...defaultConfig.header,
+				...header
 			},
 			url: defaultConfig.baseUrl + url,
 			success: (res) => {

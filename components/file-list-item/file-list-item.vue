@@ -4,12 +4,12 @@
 			<!-- 有缩略图得用image, 文件等固定图标用icon -->
 			<view v-if="prefixShow" class="uni-list-item__icon">
 				<!-- 文字图标 -->
-				<cmd-icon v-if="iconTypes.includes(type)" :type="prefixIcon" :color="prefixIconColor"/>
+				<cmd-icon v-if="iconTypes.includes(type)" :type="prefixIcon" size="26" :color="prefixIconColor" class="uni-list-item__icon-img"/>
 				<!-- colorui图标 -->
 				<!-- <text v-if="textPrefixIcon"  class="text-gray" style="font-size: 24px;" :class="'cuIcon-'+textPrefixIcon"></text> -->
 				<!-- 缩略图 -->
 				
-				<image v-else-if="thumbTypes.includes(type)" :src="thumb" class="uni-list-item__icon-img"  />
+				<image v-else-if="thumbTypes.includes(type)" :src="thumb" :lazy-load="true" class="uni-list-item__icon-img" onerror="this.src='../../../static/logo.png'" />
 			</view>
 			<view class="uni-list-item__content">
 				<view class="uni-list-item__content-title">{{ title }}</view>
@@ -198,8 +198,12 @@
 	}
 
 	.uni-list-item__icon-img {
-		height: 60upx;
-		width: 60upx
+		will-change: transform;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 70rpx;
+		width: 70rpx
 	}
 
 	.uni-list>.uni-list-item:last-child .uni-list-item-container:after {
