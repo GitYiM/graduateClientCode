@@ -2,8 +2,8 @@
 	<view class="index-container">
 		
 		<!-- main content -->
-		<view class="func-container">
-			<view class="search-container">
+		<view v-if="hasLogin"  class="func-container">
+			<view  class="search-container">
 				<file-search @onClick="toSearchPage" />
 			</view>
 			<view class="menu-container"  @tap="showModal" data-target="bottomModal">
@@ -22,7 +22,7 @@
 		
 		<!-- 授权 -->
 		<view  v-else class="authorization-container">
-			<image class="unauthorization-img" src="../../../static/logo.png"  mode="widthFix"></image>
+			<image class="unauthorization-img" src="../../../static/authenError.png"  mode="widthFix"></image>
 			<text class="unauthorization-description">
 				授权失败
 			</text>
@@ -30,13 +30,16 @@
 		</view>
 		
 		<!-- 底部popupwindow -->
-		<view class="cu-modal bottom-modal" :class="modalName=='bottomModal'?'show':''"  @tap="hideModal">
+<!-- 		<view class="cu-modal bottom-modal" :class="modalName=='bottomModal'?'show':''"  @tap="hideModal">
 			<view class="cu-dialog text-start">
 				<block v-for="(item, index) in menu" :key="index">
 					<file-list-item @itemClick="handle(item)" :textPrefixIcon="item.textPrefixIcon" :prefixIcon="item.prefixIcon" :prefixShow="true"  :prefixIconColor="item.color" :title="item.title" />
 				</block>
 			</view>
-		</view>
+		</view> -->
+		
+		<!-- 加号、more点击底部弹窗 -->
+		<GridModal :showModal="showAddGridModal" @hideModal="hideAddModal" :cuIconList="gridList" @handleAction="actionHandle"></GridModal>
 		
 		<!-- 新建文件夹模态框 -->
 		<DialogModal modalTitle="创建文件夹" :showModal="showMkDirModal" @hideAction="hideMkdirModal" @confirmAction="createNewFolder">
@@ -68,6 +71,7 @@
 	import {FileType} from '@/common/const/index.js';
 	import {timeFormat} from "@/utils/timeUtils/index.js";
 	import DialogModal from "@/components/DialogModal/DialogModal.vue";
+	import GridModal from "@/components/GridModal/GridModal.vue";
 	// ps: 这里尽量不要用箭头函数，否则this指向杀你
 	let _this;
 	export default {
@@ -75,7 +79,8 @@
 			fileSearch,
 			fileListItem,
 			cmdIcon,
-			DialogModal
+			DialogModal,
+			GridModal
 		},
 		props: {
 			curPath: {
@@ -98,46 +103,54 @@
 				menu: [],
 				dirName: "",
 				showMkDirModal: false,
-				addMenu: [
+				showAddGridModal: false,
+				gridList: [],
+				addGridList: [
 					{
-						title: '上传微信文件',
-						textPrefixIcon: 'add',
-						color: '#fff',
-						actionFunc: "uploadFile"
+						cuIcon: 'picfill',
+						name: "图片上传",
+						color: 'yellow',
+						clickAction: "uploadImage"
 					},
 					{
-						title: '上传图片',
-						textPrefixIcon: 'add',
-						color: '#fff',
-						actionFunc: "uploadImage"
+						cuIcon: 'recordfill',
+						color: 'orange',
+						name: '视频上传',
+						clickAction:  "uploadFile"
 					},
 					{
-						title: '上传视频',
-						textPrefixIcon: 'add',
-						color: '#fff',
-						actionFunc: "uploadFile"
+						cuIcon: 'weixin',
+						color: 'green',
+						name: '上传微信文件',
+						clickAction:  "uploadFile"
 					},
 					{
-						title: '新建文件夹',
-						prefixIcon: 'folder',
-						color: '#000',
-						actionFunc: "showMkdirModalAction"
-					},
+						cuIcon: 'pay',
+						color: 'blue',
+						name: '新建文件夹',
+						clickAction: "showMkdirModalAction"
+					}
+						
 				],
-				itemMenu: [
+				moreGridList: [
 					{
-						title: '分享',
-						actionFunc: "shareFile"
+						cuIcon: 'weixin',
+						color: 'green',
+						name: '分享',
+						clickAction: "shareFile"
 					},
 					{
-						title: '重命名',
-						actionFunc: "changeName"
+						cuIcon: 'edit',
+						color: 'blue',
+						name: '重命名',
+						clickAction: "changeName"
 					},
 					{
-						title: "删除",
-						actionFunc: "deleteFile"
-					},
-					
+						cuIcon: 'delete',
+						color: 'red',
+						name: '删除',
+						clickAction: "deleteFile"
+					}
 				],
 				fileList: []
 			}
@@ -149,13 +162,13 @@
 			})
 		},
 		watch: {
-			curPath:async (val) => {
+			curPath:async (val, oldVal) => {
 				console.log("operwatch", val);
 				await _this.getFileList(val);
-				console.log(getCurrentPages());
-				console.log(_this.fileList);
-				const pathArray = _this.curPath.split('/');
-				_this.changeTitle(pathArray[pathArray.length-2] || "首页");
+				if(oldVal.length > val.length) {
+					const pathArray = _this.curPath.split('/');
+					_this.changeTitle(pathArray[pathArray.length-2] || "首页");
+				}	
 			},
 			showRenameModal: () => {
 				if(!_this.showRenameModal){
@@ -183,6 +196,9 @@
 					}
 				})
 			},
+			hideAddModal() {
+				_this.showAddGridModal = false;
+			},
 			hideRenameModal() {
 				_this.showRenameModal = false;
 			},
@@ -192,7 +208,8 @@
 					url: "/storage/fileRename",
 					method: "POST",
 					header: {
-						'content-type': 'application/x-www-form-urlencoded'
+						'content-type': 'application/x-www-form-urlencoded',
+						userSession: _this.userSession
 					},
 					data: {
 						newFileName: newName,
@@ -202,8 +219,8 @@
 				_this.showRenameModal = false;
 				await _this.getFileList();
 			},
-			async changeFilePath(newPath) {
-				await _this.$emit("changeFilePath", newPath);
+			async changeFilePath(item) {
+				await _this.$emit("changeFilePath", item);
 			},
 			convertBytes(size) {
 				return conversionUtils.convertBytes(size);
@@ -300,8 +317,8 @@
 				_this.menuShow = !_this.menuShow;
 			},
 			showModal(e) {
-				_this.menu = _this.addMenu;
-				_this.modalName = e.currentTarget.dataset.target;
+				_this.gridList = _this.addGridList;
+				_this.showAddGridModal = true;
 			},
 			hideModal(e) {
 				_this.modalName = '';
@@ -313,6 +330,9 @@
 			},
 			showMkdirModal() {
 				_this.showMkDirModal = true;
+			},
+			actionHandle(actionKey){
+				_this[actionKey]();
 			},
 			handle(item) {
 				_this[item.actionFunc]();
@@ -330,7 +350,8 @@
 						url: "/storage/deleteDir",
 						method: "POST",
 						header: {
-							'content-type': 'application/x-www-form-urlencoded'
+							'content-type': 'application/x-www-form-urlencoded',
+							userSession: _this.userSession
 						},
 						data: {
 							filename: curOperItem.fileName,
@@ -343,7 +364,8 @@
 						url: "/storage/DeleteImages",
 						method: "POST",
 						header: {
-							'content-type': 'application/x-www-form-urlencoded'
+							'content-type': 'application/x-www-form-urlencoded',
+							userSession: _this.userSession
 						},
 						data: {
 							filename: curOperItem.fileName,
@@ -352,7 +374,6 @@
 					});
 				}
 				await _this.getFileList();
-				console.log(res);
 			},
 			async chooseFile() {
 				return new Promise((resolve, reject) => {
@@ -409,6 +430,7 @@
 				const images = await _this.chooseImage();
 				// 缩略图
 				const thumbnails = await _this.getCompressedImages(images);
+				console.log(thumbnails);
 				if(!Array.isArray(images)) {
 					// 错误提示
 					console.log(images);
@@ -421,9 +443,11 @@
 					filePath: images[0].path,
 					fileType: 'image',
 					name: "file",
+					header: {
+						userSession: _this.userSession
+					},
 					formData: {
 						filename: filename,
-						userSession: _this.userSession,
 						path: _this.curPath + filename
 					}
 				});
@@ -433,10 +457,12 @@
 					filePath: thumbnails,
 					fileType: 'image',
 					name: "file",
-					formData: { 
+					header: {
+						userSession: _this.userSession
+					},
+					formData: {
 						filename: thumbnailKey,
-						userSession: _this.userSession,
-						path: 'thumbnails/' + thumbnailKey
+						path: 'thumbnails/' + thumbnailKey 
 					}
 				});
 				uploadTask.onProgressUpdate ((res) => {
@@ -464,7 +490,8 @@
 					method: "POST",
 					// needLoading: true,
 					header: {
-						'content-type': 'application/x-www-form-urlencoded'
+						'content-type': 'application/x-www-form-urlencoded',
+						userSession: _this.userSession
 					},
 					data: {
 						path: requestPath,
@@ -474,9 +501,10 @@
 				await _this.getFileList();
 			},
 			showItemMenu(e, activeOperItem) {
-				_this.menu = _this.itemMenu;
-				_this.modalName = e.currentTarget.dataset.target;
 				_this.activeOperItem = activeOperItem;
+				_this.gridList = _this.moreGridList;
+				_this.showAddGridModal = true;
+				
 			},
 			
 			// 获取文件列表
@@ -510,14 +538,14 @@
 				switch (item.type){
 					// 文件夾
 					case FileType.DIRECTORY:
-						await _this.changeFilePath(item.path + '/');
-						// _this.curPath = item.path+'/';
-						// console.log(_this.curPath);
-						// await _this.getFileList(_this.curPath);
+						// path:item.path + '/'. title: item.fileName 
+						await _this.changeFilePath(item);
 						
 						break;
 					case FileType.JPG:
 					case FileType.PNG:
+						const pathArr = item.path.split("/");
+						let originName = pathArr[pathArr.length - 1];
 						const {data: previewUrl} = await _this.$http.request({
 							url: "/storage/preview",
 							method: 'GET',
@@ -526,7 +554,7 @@
 							},
 							data: {
 								path: _this.curPath,
-								filename: item.fileName
+								filename: originName
 							}
 							
 						});
@@ -534,6 +562,10 @@
 							urls: [previewUrl],
 							longPressActions: {
 								itemList: ['发送给朋友', '保存图片', '收藏'],
+							},
+							fail(err) {
+								console.log("--------图片预览失败---------");
+								console.log(err);
 							}
 						})
 						break;
@@ -543,6 +575,61 @@
 			},
 			changeTitle(folderName) {
 				_this.$emit("changeTitle", folderName);
+			},
+			async shareFile() {
+				const curOperItem = _this.activeOperItem;
+				switch(curOperItem.type) {
+					case FileType.PNG:
+					case FileType.JPG:
+						const pathArr = curOperItem.path.split("/");
+						let path = "";
+						let originName = pathArr[pathArr.length - 1];
+						if(pathArr.length > 1) {
+							path = pathArr.slice(0, pathArr.length - 1).join("/");
+						} 
+						const {data: previewUrl} = await _this.$http.request({
+							url: "/storage/preview",
+							method: 'GET',
+							header: {
+								userSession:  _this.userSession
+							},
+							data: {
+								path: path,
+								filename: originName
+							}
+							
+						});
+						uni.share({
+							provider: "weixin",
+							type: 2,
+							scene: "WXSceneSession",
+							imageUrl: previewUrl,
+							success() {
+								console.log("success: 图片分享成功");
+							},
+							fail() {
+								console.log("fail： 图片分享失败");
+							}
+						})
+						break;
+					default: 
+					const encodedSession = encodeURIComponent(_this.userSession);
+					uni.share({
+						provider: "weixin",
+						scene: "WXSceneSession",
+						type: 5,
+						title: "微信来了好文件",
+						imageUrl: "https://bjetxgzv.cdn.bspapp.com/VKCEYUGU-uni-app-doc/962fc340-4f2c-11eb-bdc1-8bd33eb6adaa.png",
+						miniProgram: {
+							id: 'gh_c11b499b3095',
+							path: `/pages/sharePage/sharePage?userSession=${encodedSession}&filePath=${curOperItem.path}`,
+							type: 1,
+						},
+						success() {
+							console.log("成功分享小程序");
+						}
+					})
+				}
 			}
 			
 		},
@@ -592,7 +679,7 @@
 			justify-content: center;
 			flex-direction: column;
 			.unauthorization-img {
-				width: 250rpx;
+				width: 400rpx;
 				height: $uni-img-size-base;
 			}
 			.authorization-button {

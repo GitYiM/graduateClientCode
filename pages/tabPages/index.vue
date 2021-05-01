@@ -81,9 +81,13 @@
 	  changeTitle(folderName) {
 		  this.title = folderName;
 	  },
-	  changeFilePath(newPath) {
-		  this.filePath = newPath;
-		  
+	  changeFilePath(item) {
+		  let changeTitleHere = false;
+		  if((item.path+'/').length > this.filePath.length) {
+			  changeTitleHere = true;
+		  }
+		  this.filePath = item.path + '/';
+		  changeTitleHere && this.changeTitle(item.fileName); 
 	  },
 	  pathBack() {
 		  const pathArray = this.filePath.split('/');

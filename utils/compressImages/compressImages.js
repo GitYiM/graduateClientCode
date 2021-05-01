@@ -1,5 +1,6 @@
 export default {
   compressionIamge(that, image) { // 等比例压缩图片 可指定图片宽高 兼容性：微信小程序端正常，其他端未测试
+	console.log("压缩图片"+ image);
     uni.showLoading({
       title: "正在压缩图片"
     });
@@ -36,6 +37,8 @@ export default {
               canvasId: 'canvas',
 			  fileType:"jpg",
               success: (res) => {
+				console.log("---------压缩结果-------------");
+				console.log(res);
                 resolve(res.tempFilePath);
               },
               fail: (err) => {

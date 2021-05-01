@@ -7,17 +7,32 @@
 		<view class="progress-box">
 			<progress percent="80" activeColor="green" active stroke-width="3" />
 		</view>
-        <view class="person-size">容量（1.4G/2068G 0.07%）</view>
+        <view class="person-size">占用空间（1.4G/2068G 0.07%）</view>
       </view>
     </view>
-    <view class="person-list">
+<!--    <view class="person-list">
       <cmd-cell-item title="帮助与反馈" slot-left arrow>
         <cmd-icon type="message" size="md" color="#368dff"></cmd-icon>
-      </cmd-cell-item>
+      </cmd-cell-item> -->
 <!--      <cmd-cell-item title="切换账号" slot-left arrow>
         <cmd-icon type="equalizer" size="md" color="#368dff"></cmd-icon>
       </cmd-cell-item> -->
-    </view>
+    <!-- </view> -->
+	<view class="cu-list menu sm-border" >
+		<view class="cu-item arrow" @click="toOperLogPage">
+			<view class="content">
+				<text class="cuIcon-list text-blue "></text>
+				<text class="text-grey">操作日志</text>
+			</view>
+		</view>
+		<view class="cu-item arrow">
+			<view class="content">
+				<text class="cuIcon-form text-grey"></text>
+				<text class="text-grey">问题反馈</text>
+			</view>
+		</view>
+	</view>
+	
   </view>
 </template>
 
@@ -49,7 +64,15 @@
         uni.navigateTo({
           url: '/pages/user/info/info'
         })
-      }
+      },
+	  toOperLogPage() {
+		  uni.navigateTo({
+		  	url: '/pages/operLog/operLog',
+			success() {
+				console.log("进入操作日志页");
+			}
+		  })
+	  }
     }
   }
 </script>

@@ -35,30 +35,42 @@
 			</view>
 		</cmd-page-body>
 		<!-- 底部popupwindow -->
-		<view class="cu-modal bottom-modal" :class="modalName=='bottomModal'?'show':''"  @tap="hideModal">
+		<!-- <view class="cu-modal bottom-modal" :class="modalName=='bottomModal'?'show':''"  @tap="hideModal">
 			<view class="cu-dialog text-start">
 				<block v-for="(item, index) in menu" :key="index">
 					<file-list-item @itemClick="handle(item)" :textPrefixIcon="item.textPrefixIcon" :prefixIcon="item.prefixIcon" :prefixShow="true"  :prefixIconColor="item.color" :title="item.title" />
 				</block>
 			</view>
-		</view>
+		</view> -->
+		<GridModal :showModal="showAddGridModal" @hideModal="hideModal" :cuIconList="gridList" @handleAction="actionHandle"></GridModal>
+		<!-- 重命名模态框 -->
+		<DialogModal modalTitle="重命名" :showModal="showRenameModal" @hideAction="hideRenameModal" @confirmAction="renameFile">
+			<view class="padding-xl">
+				<input class="bg-gray" v-model="fileNewName" placeholder="请输入文件名" />
+			</view>
+		</DialogModal>
 	</view>
 </template>
 
 <script>
+	import {mapState} from 'vuex';
 	import cmdNavBar from "@/components/cmd-nav-bar/cmd-nav-bar.vue";
 	import cmdPageBody from "@/components/cmd-page-body/cmd-page-body.vue";
 	import fileSearch from "@/components/file-search/file-search.vue";
 	import fileListItem from "@/components/file-list-item/file-list-item.vue";
 	import conversionUtils from "@/utils/conversionUtils/conversionUtils.js";
 	import {FileType} from '@/common/const/index.js';
+	import GridModal from "@/components/GridModal/GridModal.vue"
+	import DialogModal from "@/components/DialogModal/DialogModal.vue"
 	let _this;
 	export default {
 		components: {
 			cmdNavBar,
 			cmdPageBody,
 			fileSearch,
-			fileListItem
+			fileListItem,
+			GridModal,
+			DialogModal
 		},
 		data() {
 			return {
@@ -68,28 +80,40 @@
 				fileList: [],
 				// 搜索结果列表
 				resCount: 0,
-				modalName: "",
+				showAddGridModal: false,
+				showRenameModal: false,
+				fileNewName: '',
 				menu: [],
-				itemMoreMenu: [
+				gridList: [],
+				moreGridList: [
 					{
-						title: '分享',
-						actionFunc: "shareFile"
+						cuIcon: 'weixin',
+						color: 'green',
+						name: '分享',
+						clickAction: "shareFile"
 					},
 					{
-						title: '重命名',
-						actionFunc: "changeName"
+						cuIcon: 'edit',
+						color: 'blue',
+						name: '重命名',
+						clickAction: "changeName"
 					},
 					{
-						title: "删除",
-						actionFunc: "deleteFile"
-					},
-					
+						cuIcon: 'delete',
+						color: 'red',
+						name: '删除',
+						clickAction: "deleteFile"
+					}
 				],
 				activeOperItem: {}
 				
 			}
 		},
 		computed: {
+			...mapState({
+				hasLogin: state => state.loginStatusInfo.hasLogin,
+				userSession: state => state.loginStatusInfo.userSession
+			}),
 			buttonTitle() {
 				return !!_this.searchKeyword? "搜索": "取消";
 			},
@@ -109,8 +133,31 @@
 			pathBack() {
 				uni.navigateBack();
 			},
+			async renameFile() {
+				const newName = _this.fileNewName;
+				const res = await _this.$http.request({
+					url: "/storage/fileRename",
+					method: "POST",
+					header: {
+						'content-type': 'application/x-www-form-urlencoded',
+						userSession: _this.userSession
+					},
+					data: {
+						newFileName: newName,
+						path: _this.activeOperItem.path
+					}
+				})
+				_this.showRenameModal = false;
+				await _this.searchByKeyword();
+			},
+			actionHandle(actionKey) {
+				_this[actionKey]();
+			},
 			convertBytes(size) {
 				return conversionUtils.convertBytes(size);
+			},
+			hideRenameModal() {
+				_this.showRenameModal = false;
 			},
 			async searchOrCancel() {
 				if(_this.buttonTitle === "搜索") {
@@ -126,11 +173,20 @@
 				const res = await _this.$http.request({
 					url: "/storage/searchFile",
 					method: "GET",
+					header: {
+						userSession: _this.userSession
+					},
 					data: {
 						keyWord: _this.searchKeyword
 					}
 				})
 				_this.fileList = res.data;
+				if(_this.fileList.length <= 0) {
+					uni.showToast({
+						icon: "none",
+						title: "暂无相关文件"
+					})
+				}
 				await _this.updateTags();
 			},
 			async updateTags() {
@@ -138,6 +194,9 @@
 				const res = await _this.$http.request({
 					url:"/storage/getHistoryKeyword",
 					method: "GET",
+					header: {
+						userSession: _this.userSession
+					},
 					data: {
 						limitCount: 5
 					}
@@ -152,7 +211,10 @@
 			async clearAllKeyWords() {
 			    const res = await _this.$http.request({
 					url: "/storage/clearKeyWords",
-					method: "GET"
+					method: "GET",
+					header: {
+						userSession: _this.userSession
+					}
 				})
 				if(res.code === 0) {
 					_this.tagsList = [];
@@ -178,17 +240,20 @@
 					case FileType.PNG:
 						const pathArr = item.path.split("/");
 						let path = "";
+						let originName = pathArr[pathArr.length - 1];
 						if(pathArr.length > 1) {
 							path = pathArr.slice(0, pathArr.length - 1).join("/");
 						} 
 						const {data: previewUrl} = await _this.$http.request({
 							url: "/storage/preview",
 							method: 'GET',
+							header: {
+								userSession: _this.userSession
+							},
 							data: {
 								path: path,
-								filename: item.fileName
+								filename: originName
 							}
-							
 						});
 						uni.previewImage({
 							urls: [previewUrl],
@@ -204,17 +269,56 @@
 			},
 			showItemMenu(e, item) {
 				console.log("点击");
-				_this.menu = _this.itemMenu;
-				_this.modalName = e.currentTarget.dataset.target;
+				_this.gridList = _this.moreGridList;
 				_this.activeOperItem = item;
+				_this.showAddGridModal = true;
+				
 			},
 			hideModal() {
-				_this.modalName = "";
+				console.log("hide");
+				_this.showAddGridModal = false;
 			}, 
 			inputFocus() {
 				_this.fileList = [];
-			}
-			
+			},
+			async deleteFile() {
+				const curOperItem = _this.activeOperItem;
+				let res = null;
+				if(curOperItem.type === "Directory") {
+					res = await _this.$http.request({
+						url: "/storage/deleteDir",
+						method: "POST",
+						header: {
+							'content-type': 'application/x-www-form-urlencoded',
+							userSession: _this.userSession
+						},
+						data: {
+							filename: curOperItem.fileName,
+							path: curOperItem.path
+						}
+					});
+					
+				}else {
+					res = await _this.$http.request({
+						url: "/storage/DeleteImages",
+						method: "POST",
+						header: {
+							'content-type': 'application/x-www-form-urlencoded',
+							userSession: _this.userSession
+						},
+						data: {
+							filename: curOperItem.fileName,
+							path: curOperItem.path
+						}
+					});
+				}
+				await _this.searchByKeyword();
+			},
+			async changeName () {
+				const curOperItem = _this.activeOperItem;
+				_this.showRenameModal = true;
+				_this.fileNewName = curOperItem.fileName;
+			},
 		},
 		async created() {
 			_this = this;
