@@ -130,6 +130,61 @@
 			}
 		},
 		methods: {
+			async shareFile() {
+				const curOperItem = _this.activeOperItem;
+				switch(curOperItem.type) {
+					case FileType.PNG:
+					case FileType.JPG:
+						const pathArr = curOperItem.path.split("/");
+						let path = "";
+						let originName = pathArr[pathArr.length - 1];
+						if(pathArr.length > 1) {
+							path = pathArr.slice(0, pathArr.length - 1).join("/");
+						} 
+						const {data: previewUrl} = await _this.$http.request({
+							url: "/storage/preview",
+							method: 'GET',
+							header: {
+								userSession:  _this.userSession
+							},
+							data: {
+								path: path,
+								filename: originName
+							}
+							
+						});
+						uni.share({
+							provider: "weixin",
+							type: 2,
+							scene: "WXSceneSession",
+							imageUrl: previewUrl,
+							success() {
+								console.log("success: 图片分享成功");
+							},
+							fail() {
+								console.log("fail： 图片分享失败");
+							}
+						})
+						break;
+					default: 
+					const encodedSession = encodeURIComponent(_this.userSession);
+					uni.share({
+						provider: "weixin",
+						scene: "WXSceneSession",
+						type: 5,
+						title: "微信来了好文件",
+						imageUrl: "https://bjetxgzv.cdn.bspapp.com/VKCEYUGU-uni-app-doc/962fc340-4f2c-11eb-bdc1-8bd33eb6adaa.png",
+						miniProgram: {
+							id: 'gh_c11b499b3095',
+							path: `/pages/sharePage/sharePage?userSession=${encodedSession}&filePath=${curOperItem.path}`,
+							type: 1,
+						},
+						success() {
+							console.log("成功分享小程序");
+						}
+					})
+				}
+			},
 			pathBack() {
 				uni.navigateBack();
 			},
