@@ -55,6 +55,7 @@
 			</view>
 		</DialogModal>
 		
+		<uploadProgressModal @uploadAbort="abortUpload" :showModal="showUploadProgressModal" :uploadInfo="uploadInfo" @onFinishUpload="onFinishUpload"/>
 		
 		<!-- 图片压缩所需canvas -->
 		<canvas :style="{ 'width': cWidth + 'px', 'height': cHeight + 'px', 'position': 'absolute', 'z-index': -1, 'left': '-10000rpx', 'top': '-10000rpx' }" canvas-id="canvas"></canvas>
@@ -72,15 +73,17 @@
 	import {timeFormat} from "@/utils/timeUtils/index.js";
 	import DialogModal from "@/components/DialogModal/DialogModal.vue";
 	import GridModal from "@/components/GridModal/GridModal.vue";
+	import uploadProgressModal from "@/components/uploadProgressModal/uploadProgressModal.vue";
 	// ps: 这里尽量不要用箭头函数，否则this指向杀你
 	let _this;
 	export default {
-		components: {
+		components: { 
 			fileSearch,
 			fileListItem,
 			cmdIcon,
 			DialogModal,
-			GridModal
+			GridModal,
+			uploadProgressModal
 		},
 		props: {
 			curPath: {
@@ -104,6 +107,12 @@
 				dirName: "",
 				showMkDirModal: false,
 				showAddGridModal: false,
+				showUploadProgressModal: false,
+				uploadInfo: {
+					uploadProgress: 0,
+					uploadFile: ''
+				},
+				curUploadTask: null,
 				gridList: [],
 				addGridList: [
 					{
@@ -451,6 +460,7 @@
 						path: _this.curPath + filename
 					}
 				});
+				_this.curUploadTask = uploadTask;
 			 	let thumbnailKey = (_this.curPath+filename).replace("/",'');
 				const { thumbnailUploadPromise } = _this.$http.uploadFile({
 					url: '/storage/UploadImages',
@@ -466,14 +476,17 @@
 					}
 				});
 				uploadTask.onProgressUpdate ((res) => {
-					// console.log(res.progress);
-					// console.log(res.totalBytesSent);
-					// console.log(res.totalBytesExpectedToSend);
+					_this.uploadInfo.uploadProgress = res.progress; 
 				})
+				// 上传modal展示、信息赋予
+				_this.uploadInfo.uploadFile = filename;
+				_this.showUploadProgressModal = true;
 				await Promise.all([uploadPromise, thumbnailUploadPromise]);
 				await _this.getFileList();
 			},
-			
+			hideUploadModal() {
+				_this.showUploadProgressModal = false;
+			},
 			showMkdirModalAction() {
 				
 				_this.showMkdirModal("DialogModal1");
@@ -630,6 +643,16 @@
 						}
 					})
 				}
+			},
+			onFinishUpload(){
+				_this.hideUploadModal();
+			},
+			abortUpload() {
+				if(_this.curUploadTask) {
+					console.log("取消");
+					_this.curUploadTask.abort(); 
+					_this.hideUploadModal();
+				}				
 			}
 			
 		},
